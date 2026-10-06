@@ -156,20 +156,37 @@ public:
     }
 };
 
+void showBanner() {
+    system("clear");
+
+    cout << "=======================================================\n";
+    cout << " ██████╗  █████╗ ███╗   ██╗██╗  ██╗    ██████╗ ██╗  ██╗\n";
+    cout << " ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝    ██╔══██╗██║  ██║\n";
+    cout << " ██████╔╝███████║██╔██╗ ██║█████═╝     ██████╔╝███████║\n";
+    cout << " ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗     ██╔═══╝ ██╔══██║\n";
+    cout << " ██████╔╝██║  ██║██║ ╚████║██║  ██╗    ██║     ██║  ██║\n";
+    cout << " ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝    ╚═╝     ╚═╝  ╚═╝\n";
+    cout << "            -- SECURE BANKING SYSTEM --            \n";
+    cout << "=======================================================\n\n";
+}
+
 int main() {
     BankAccount bank;
     int choice;
 
     do {
-        cout << "\n====================================\n";
-        cout << "     ADVANCED BANKING SYSTEM        \n";
-        cout << "====================================\n";
-        cout << "1. Create New Account\n";
-        cout << "2. Deposit Money\n";
-        cout << "3. Withdraw Money\n";
-        cout << "4. Display All Accounts (Admin)\n";
-        cout << "5. Exit\n";
-        cout << "Enter Your Choice (1-5): ";
+        showBanner(); // Har baar screen clear hoke banner aur menu dikhega
+
+        cout << "  ┌─────────────────────────────────────────┐\n";
+        cout << "  │               MAIN MENU                 │\n";
+        cout << "  ├─────────────────────────────────────────┤\n";
+        cout << "  │  1. Create New Account                  │\n";
+        cout << "  │  2. Deposit Amount                      │\n";
+        cout << "  │  3. Withdraw Amount                     │\n";
+        cout << "  │  4. Display All Accounts                │\n";
+        cout << "  │  5. Exit System                         │\n";
+        cout << "  └─────────────────────────────────────────┘\n";
+        cout << "  Enter Choice [1-5]: ";
         cin >> choice;
 
         switch (choice) {
@@ -178,14 +195,14 @@ int main() {
                 break;
             case 2: {
                 int accNo;
-                cout << "Enter Account Number for Deposit: ";
+                cout << "\n  Enter Account Number for Deposit: ";
                 cin >> accNo;
                 bank.depositMoney(accNo);
                 break;
             }
             case 3: {
                 int accNo;
-                cout << "Enter Account Number for Withdrawal: ";
+                cout << "\n  Enter Account Number for Withdraw: ";
                 cin >> accNo;
                 bank.withdrawMoney(accNo);
                 break;
@@ -194,11 +211,18 @@ int main() {
                 bank.displayAllAccounts();
                 break;
             case 5:
-                cout << "\nThank you for using our Banking System!\n";
+                cout << "\n  Thank you for using our Banking System!\n";
                 break;
             default:
-                cout << "\nInvalid Choice! Please try again.\n";
+                cout << "\n  Invalid Choice!";
         }
+
+        if (choice != 5) {
+            cout << "\n\n  Press Enter to continue...";
+            cin.ignore();
+            cin.get();
+        }
+
     } while (choice != 5);
 
     return 0;
