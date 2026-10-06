@@ -4,6 +4,25 @@
 #include <iomanip>
 
 using namespace std;
+string encryptDecryptPIN(string pin) {
+    char key = 'K'; // Secret Encryption Key
+    string output = pin;
+    for (size_t i = 0; i < pin.size(); i++) {
+        output[i] = pin[i] ^ key;
+    }
+    return output;
+}
+
+// Global Helper: Invalid input handle karne ke liye
+void clearInputBuffer() {
+    cin.clear();
+    cin.ignore(10000, '\n');
+}
+
+// Iske baad aapki main BankAccount class aayegi
+class BankAccount {
+    // ... rest of your class code ...
+};
 
 class BankAccount {
 private:
