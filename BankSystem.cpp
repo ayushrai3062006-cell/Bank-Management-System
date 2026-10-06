@@ -2,9 +2,11 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
+#include <cstdlib>
 
 using namespace std;
 
+// XOR Encryption & Decryption Helper Function
 string encryptDecryptPIN(string pin) {
     char key = 'K'; // Secret Encryption Key
     string output = pin;
@@ -28,51 +30,7 @@ private:
     double balance;
 
 public:
-    void displayAllAccounts() {
-        ifstream inFile("bank_accounts.txt");
-        if (!inFile) {
-            cout << "\nNo records found." << endl;
-            return;
-        }
-        
-        string accNum, tempPin, balanceVal, name;
-        cout << "\n================ ALL ACCOUNTS ================\n";
-        while (inFile >> accNum >> tempPin >> balanceVal) {
-            getline(inFile >> ws, name);
-            cout << "Acc No: " << accNum << " | Balance: $" << balanceVal 
-                 << " | Name: " << name << endl;
-        }
-        inFile.close();
-    }
-
-    bool authenticateUser(string correctPIN) {
-        string enteredPIN;
-        int attempts = 0;
-        const int MAX_ATTEMPTS = 3;
-
-        while (attempts < MAX_ATTEMPTS) {
-            cout << "Enter 4-Digit Security PIN: ";
-            cin >> enteredPIN;
-
-            // XOR helper se input ko check kar rahe hain
-            if (encryptDecryptPIN(enteredPIN) == correctPIN) {
-                cout << "\n[SUCCESS] Access Granted!\n";
-                return true;
-            } else {
-                attempts++;
-                cout << "[ERROR] Invalid PIN! Attempts left: " 
-                     << (MAX_ATTEMPTS - attempts) << "\n\n";
-            }
-        }
-
-        cout << "=========================================\n";
-        cout << " [SECURITY ALERT] Account Temporarily Locked!\n";
-        cout << " Too many failed attempts. Try again later.\n";
-        cout << "=========================================\n";
-        return false;
-    }
-
-    // Account Create karne ka function
+    // Account Create karne ka function (With PIN Encryption)
     void createAccount() {
         cout << "\n====================================\n";
         cout << "      NEW ACCOUNT REGISTRATION      \n";
@@ -95,14 +53,15 @@ public:
             cin >> balance;
         }
 
-        // File me save karna
+        // File me ENCRYPTED PIN save kar rahe hain
         ofstream outFile("bank_accounts.txt", ios::app);
         if (outFile.is_open()) {
-            outFile << accountNumber << " " << pin << " " << balance << " " << name << endl;
+            string encryptedPIN = encryptDecryptPIN(pin);
+            outFile << accountNumber << " " << encryptedPIN << " " << balance << " " << name << endl;
             outFile.close();
-            cout << "\nAccount Created Successfully!\n";
+            cout << "\n[SUCCESS] Account Created Successfully! PIN has been encrypted.\n";
         } else {
-            cout << "\nError saving account details!\n";
+            cout << "\n[ERROR] Error saving account details!\n";
         }
     }
 
@@ -112,11 +71,12 @@ public:
         ofstream tempFile("temp.txt");
         bool found = false;
 
-        int acc, p;
+        int acc;
+        string encryptedPinFromFile;
         double bal;
         string accName;
 
-        while (inFile >> acc >> p >> bal) {
+        while (inFile >> acc >> encryptedPinFromFile >> bal) {
             getline(inFile >> ws, accName);
             if (acc == accNum) {
                 found = true;
@@ -127,12 +87,12 @@ public:
 
                 if (depositAmt > 0) {
                     bal += depositAmt;
-                    cout << "Deposit Successful! Updated Balance: Rs " << bal << endl;
+                    cout << "\n[SUCCESS] Deposit Successful! Updated Balance: Rs " << bal << endl;
                 } else {
-                    cout << "Invalid Deposit Amount!\n";
+                    cout << "\n[ERROR] Invalid Deposit Amount!\n";
                 }
             }
-            tempFile << acc << " " << p << " " << bal << " " << accName << endl;
+            tempFile << acc << " " << encryptedPinFromFile << " " << bal << " " << accName << endl;
         }
 
         inFile.close();
@@ -141,28 +101,30 @@ public:
         remove("bank_accounts.txt");
         rename("temp.txt", "bank_accounts.txt");
 
-        if (!found) cout << "\nAccount Number Not Found!\n";
+        if (!found) cout << "\n[ERROR] Account Number Not Found!\n";
     }
 
-    // Money Withdraw karne ka function
+    // Money Withdraw karne ka function (With XOR Verification)
     void withdrawMoney(int accNum) {
         ifstream inFile("bank_accounts.txt");
         ofstream tempFile("temp.txt");
         bool found = false;
 
-        int acc, p;
+        int acc;
+        string encryptedPinFromFile;
         double bal;
         string accName;
 
-        while (inFile >> acc >> p >> bal) {
+        while (inFile >> acc >> encryptedPinFromFile >> bal) {
             getline(inFile >> ws, accName);
             if (acc == accNum) {
                 found = true;
-                int enteredPin;
+                string enteredPin;
                 cout << "Enter Security PIN: ";
                 cin >> enteredPin;
 
-                if (enteredPin == p) {
+                // Input PIN ko encrypt karke stored encrypted PIN se verify kar rahe hain
+                if (encryptDecryptPIN(enteredPin) == encryptedPinFromFile) {
                     double withdrawAmt;
                     cout << "\nCurrent Balance: Rs " << bal << endl;
                     cout << "Enter Amount to Withdraw: ";
@@ -170,15 +132,15 @@ public:
 
                     if (withdrawAmt > 0 && withdrawAmt <= bal) {
                         bal -= withdrawAmt;
-                        cout << "Withdrawal Successful! Remaining Balance: Rs " << bal << endl;
+                        cout << "\n[SUCCESS] Withdrawal Successful! Remaining Balance: Rs " << bal << endl;
                     } else {
-                        cout << "Insufficient Balance or Invalid Amount!\n";
+                        cout << "\n[ERROR] Insufficient Balance or Invalid Amount!\n";
                     }
                 } else {
-                    cout << "Incorrect PIN! Access Denied.\n";
+                    cout << "\n[SECURITY ALERT] Incorrect PIN! Access Denied.\n";
                 }
             }
-            tempFile << acc << " " << p << " " << bal << " " << accName << endl;
+            tempFile << acc << " " << encryptedPinFromFile << " " << bal << " " << accName << endl;
         }
 
         inFile.close();
@@ -187,9 +149,34 @@ public:
         remove("bank_accounts.txt");
         rename("temp.txt", "bank_accounts.txt");
 
-        if (!found) cout << "\nAccount Number Not Found!\n";
+        if (!found) cout << "\n[ERROR] Account Number Not Found!\n";
     }
-}; // <--- YAHAN CLASS CLOSE HO GAYI HALE!
+
+    // All Accounts View karne ka function
+    void displayAllAccounts() {
+        ifstream inFile("bank_accounts.txt");
+        if (!inFile) {
+            cout << "\nNo records found." << endl;
+            return;
+        }
+
+        int acc;
+        string encryptedPinFromFile;
+        double bal;
+        string accName;
+
+        cout << "\n=======================================================\n";
+        cout << left << setw(12) << "Acc No" << setw(15) << "Balance (Rs)" << setw(20) << "Name" << endl;
+        cout << "=======================================================\n";
+
+        while (inFile >> acc >> encryptedPinFromFile >> bal) {
+            getline(inFile >> ws, accName);
+            cout << left << setw(12) << acc << setw(15) << fixed << setprecision(2) << bal << setw(20) << accName << endl;
+        }
+        cout << "=======================================================\n";
+        inFile.close();
+    }
+};
 
 void showBanner() {
     system("clear");
@@ -210,7 +197,7 @@ int main() {
     int choice;
 
     do {
-        showBanner(); // Har baar screen clear hoke banner aur menu dikhega
+        showBanner();
 
         cout << "  ┌─────────────────────────────────────────┐\n";
         cout << "  │               MAIN MENU                 │\n";
@@ -250,6 +237,7 @@ int main() {
                 break;
             default:
                 cout << "\n  Invalid Choice!";
+                clearInputBuffer();
         }
 
         if (choice != 5) {
