@@ -28,10 +28,36 @@ class BankAccount {
 private:
     int accountNumber;
     string name;
-    int pin;
+    string pin;
     double balance;
 
 public:
+bool authenticateUser(string correctPIN) {
+    string enteredPIN;
+    int attempts = 0;
+    const int MAX_ATTEMPTS = 3;
+
+    while (attempts < MAX_ATTEMPTS) {
+        cout << "Enter 4-Digit Security PIN: ";
+        cin >> enteredPIN;
+
+        // XOR helper se input ko check kar rahe hain
+        if (encryptDecryptPIN(enteredPIN) == correctPIN) {
+            cout << "\n[SUCCESS] Access Granted!\n";
+            return true;
+        } else {
+            attempts++;
+            cout << "[ERROR] Invalid PIN! Attempts left: " 
+                 << (MAX_ATTEMPTS - attempts) << "\n\n";
+        }
+    }
+
+    cout << "=========================================\n";
+    cout << " [SECURITY ALERT] Account Temporarily Locked!\n";
+    cout << " Too many failed attempts. Try again later.\n";
+    cout << "=========================================\n";
+    return false;
+}
     // Account Create karne ka function
     void createAccount() {
         cout << "\n====================================\n";
