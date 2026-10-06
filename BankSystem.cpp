@@ -4,6 +4,7 @@
 #include <iomanip>
 
 using namespace std;
+
 string encryptDecryptPIN(string pin) {
     char key = 'K'; // Secret Encryption Key
     string output = pin;
@@ -19,11 +20,6 @@ void clearInputBuffer() {
     cin.ignore(10000, '\n');
 }
 
-// Iske baad aapki main BankAccount class aayegi
-class BankAccount {
-    // ... rest of your class code ...
-};
-
 class BankAccount {
 private:
     int accountNumber;
@@ -32,32 +28,50 @@ private:
     double balance;
 
 public:
-bool authenticateUser(string correctPIN) {
-    string enteredPIN;
-    int attempts = 0;
-    const int MAX_ATTEMPTS = 3;
-
-    while (attempts < MAX_ATTEMPTS) {
-        cout << "Enter 4-Digit Security PIN: ";
-        cin >> enteredPIN;
-
-        // XOR helper se input ko check kar rahe hain
-        if (encryptDecryptPIN(enteredPIN) == correctPIN) {
-            cout << "\n[SUCCESS] Access Granted!\n";
-            return true;
-        } else {
-            attempts++;
-            cout << "[ERROR] Invalid PIN! Attempts left: " 
-                 << (MAX_ATTEMPTS - attempts) << "\n\n";
+    void displayAllAccounts() {
+        ifstream inFile("bank_accounts.txt");
+        if (!inFile) {
+            cout << "\nNo records found." << endl;
+            return;
         }
+        
+        string accNum, tempPin, balanceVal, name;
+        cout << "\n================ ALL ACCOUNTS ================\n";
+        while (inFile >> accNum >> tempPin >> balanceVal) {
+            getline(inFile >> ws, name);
+            cout << "Acc No: " << accNum << " | Balance: $" << balanceVal 
+                 << " | Name: " << name << endl;
+        }
+        inFile.close();
     }
 
-    cout << "=========================================\n";
-    cout << " [SECURITY ALERT] Account Temporarily Locked!\n";
-    cout << " Too many failed attempts. Try again later.\n";
-    cout << "=========================================\n";
-    return false;
-}
+    bool authenticateUser(string correctPIN) {
+        string enteredPIN;
+        int attempts = 0;
+        const int MAX_ATTEMPTS = 3;
+
+        while (attempts < MAX_ATTEMPTS) {
+            cout << "Enter 4-Digit Security PIN: ";
+            cin >> enteredPIN;
+
+            // XOR helper se input ko check kar rahe hain
+            if (encryptDecryptPIN(enteredPIN) == correctPIN) {
+                cout << "\n[SUCCESS] Access Granted!\n";
+                return true;
+            } else {
+                attempts++;
+                cout << "[ERROR] Invalid PIN! Attempts left: " 
+                     << (MAX_ATTEMPTS - attempts) << "\n\n";
+            }
+        }
+
+        cout << "=========================================\n";
+        cout << " [SECURITY ALERT] Account Temporarily Locked!\n";
+        cout << " Too many failed attempts. Try again later.\n";
+        cout << "=========================================\n";
+        return false;
+    }
+
     // Account Create karne ka function
     void createAccount() {
         cout << "\n====================================\n";
@@ -175,31 +189,7 @@ bool authenticateUser(string correctPIN) {
 
         if (!found) cout << "\nAccount Number Not Found!\n";
     }
-
-    // All Accounts View karne ka function (Admin View)
-    void displayAllAccounts() {
-        ifstream inFile("bank_accounts.txt");
-        if (!inFile.is_open()) {
-            cout << "\nNo accounts found in database!\n";
-            return;
-        }
-
-        int acc, p;
-        double bal;
-        string accName;
-
-        cout << "\n========================================================\n";
-        cout << left << setw(12) << "Acc No" << setw(20) << "Name" << setw(15) << "Balance (Rs)" << endl;
-        cout << "========================================================\n";
-
-        while (inFile >> acc >> p >> bal) {
-            getline(inFile >> ws, accName);
-            cout << left << setw(12) << acc << setw(20) << accName << setw(15) << fixed << setprecision(2) << bal << endl;
-        }
-        cout << "========================================================\n";
-        inFile.close();
-    }
-};
+}; // <--- YAHAN CLASS CLOSE HO GAYI HALE!
 
 void showBanner() {
     system("clear");
